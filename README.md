@@ -49,8 +49,8 @@ Add a class to your project and implement the generated interface. In the exampl
 ```C#
 class ExampleVisitor : IExampleVisitor<string>
 {
-    string IExampleVisitor<string>.VisitExample() => "Example";
-    string IExampleVisitor<string>.VisitExampleSubClass() => "ExampleSubClass";
+    string IExampleVisitor<string>.VisitExample(Example example) => "Example";
+    string IExampleVisitor<string>.VisitExampleSubClass(ExampleSubClass example) => "ExampleSubClass";
 }
 ```
 #### Using the visitor
