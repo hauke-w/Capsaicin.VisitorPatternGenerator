@@ -107,14 +107,14 @@ partial class ExampleSubClass : Example { }
 
 class ExampleVisitor1 : IExampleVisitor<int, string>
 {
-    string IExampleVisitor.VisitExample<int, string>(int param1) => "$Example: param1={param1}";
-    string IExampleVisitor.VisitExampleSubClass<int, string>(int param1) => $"ExampleSubClass: param1={param1}";
+    string IExampleVisitor.VisitExample<int, string>(Example example, int param1) => "$Example: param1={param1}";
+    string IExampleVisitor.VisitExampleSubClass<int, string>(ExampleSubClass example, int param1) => $"ExampleSubClass: param1={param1}";
 }
 
 class ExampleVisitor2 : IExampleVisitor<double, CultureInfo, string>
 {
-    string IExampleVisitor.VisitExample<double, CultureInfo, string>(double param1, CultureInfo param2) => "$Example: param1={param1.ToString(param2)}";
-    string IExampleVisitor.VisitExampleSubClass<double, CultureInfo, string>(double param1, CultureInfo param2) => $"ExampleSubClass: param1={param1.ToString(param2)}";
+    string IExampleVisitor.VisitExample<double, CultureInfo, string>(Example example, double param1, CultureInfo param2) => "$Example: param1={param1.ToString(param2)}";
+    string IExampleVisitor.VisitExampleSubClass<double, CultureInfo, string>(ExampleSubClass example, double param1, CultureInfo param2) => $"ExampleSubClass: param1={param1.ToString(param2)}";
 }
 ```
 
@@ -143,14 +143,14 @@ partial class ExampleSubClass : Example { }
 
 class ExampleVisitor3 : IExampleVisitor<string>
 {
-    string IExampleVisitor.VisitExample<string>(CultureInfo param1) => "$Example: culture={param1.DisplayName}";
-    string IExampleVisitor.VisitExampleSubClass<string>(CultureInfo param1) => $"ExampleSubClass: culture={param1.DisplayName}";
+    string IExampleVisitor.VisitExample<string>(Example example, CultureInfo param1) => "$Example: culture={param1.DisplayName}";
+    string IExampleVisitor.VisitExampleSubClass<string>(ExampleSubClass example, CultureInfo param1) => $"ExampleSubClass: culture={param1.DisplayName}";
 }
 
 class ExampleVisitor4 : IExampleVisitor<double, string>
 {
-    string IExampleVisitor.VisitExample<double, string>(double param1, CultureInfo param2) => "$Example: param1={param1.ToString(param2)}");
-    string IExampleVisitor.VisitExampleSubClass<double, string>(double param1, CultureInfo param2) => $"ExampleSubClass: param1={param1.ToString(param2)}";
+    string IExampleVisitor.VisitExample<double, string>(Example example, double param1, CultureInfo param2) => "$Example: param1={param1.ToString(param2)}");
+    string IExampleVisitor.VisitExampleSubClass<double, string>(ExampleSubClass example, double param1, CultureInfo param2) => $"ExampleSubClass: param1={param1.ToString(param2)}";
 }
 ```
 
@@ -168,14 +168,14 @@ partial class ExampleSubClass : Example { }
 
 class ExampleVisitor3 : IExampleVisitor<string>
 {
-    string IExampleVisitor.VisitExample<string>(CultureInfo culture) => "$Example: culture={culture.DisplayName}");
-    string IExampleVisitor.VisitExampleSubClass<string>(CultureInfo culture) => $"ExampleSubClass: culture={culture.DisplayName}");
+    string IExampleVisitor.VisitExample<string>(Example example, CultureInfo culture) => "$Example: culture={culture.DisplayName}");
+    string IExampleVisitor.VisitExampleSubClass<string>(ExampleSubClass example, CultureInfo culture) => $"ExampleSubClass: culture={culture.DisplayName}");
 }
 
 class ExampleVisitor4 : IExampleVisitor<double, string>
 {
-    string IExampleVisitor.VisitExample<double, string>(double param1, CultureInfo culture) => "$Example: param1={culture.ToString(culture)}");
-    string IExampleVisitor.VisitExampleSubClass<double, string>(double param1, CultureInfo culture) => $"ExampleSubClass: param1={culture.ToString(culture)}";
+    string IExampleVisitor.VisitExample<double, string>(Example example, double param1, CultureInfo culture) => "$Example: param1={culture.ToString(culture)}");
+    string IExampleVisitor.VisitExampleSubClass<double, string>(ExampleSubClass example, double param1, CultureInfo culture) => $"ExampleSubClass: param1={culture.ToString(culture)}";
 }
 ```
 
