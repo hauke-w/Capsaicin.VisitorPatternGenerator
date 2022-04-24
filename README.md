@@ -4,7 +4,7 @@ See the [Visitor Pattern](https://en.wikipedia.org/wiki/Visitor_pattern) article
 
 ## Usage
 ### Enabling source generator in your project
-The source generator must be added to the C# project that contains one or more class hiearachies that you want to be visitable. You can do this with either a nuget package reference or a project reference.
+The source generator must be added to the C# project that contains one or more class hieararchies that you want to be visitable. You can do this with either a nuget package reference or a project reference.
 #### Option 1: add Nuget package
 Add the *Capsaicin.VisitorPatternGenerator* nuget package to the project. The package reference in the *.csproj* file should be similar as follows:
 ```xml
