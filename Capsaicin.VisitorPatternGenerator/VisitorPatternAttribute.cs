@@ -3,6 +3,9 @@ using System.Diagnostics;
 
 namespace Capsaicin.VisitorPattern;
 
+/// <summary>
+/// The VisitorPatternGenerator will generate a visitor interface and and an Accept method for classes annotated with this attribute. The attribute must be applied to the root class of the hierarchy.
+/// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
 [Conditional("IncludeVisitorPatternAttribute")]
 internal sealed class VisitorPatternAttribute : Attribute
