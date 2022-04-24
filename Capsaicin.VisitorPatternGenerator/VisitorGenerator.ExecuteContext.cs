@@ -237,7 +237,7 @@ partial class VisitorGenerator
             builder.AppendLine(@"using System;
 using System.Collections.Generic;
 using System.Linq;");
-            if (TypeSymbol.ContainingNamespace is { } ns)
+            if (TypeSymbol.ContainingNamespace is { IsGlobalNamespace: false } ns)
             {
                 builder.AppendLine($"namespace {ns.ToDisplayString()};");
             }
@@ -265,7 +265,7 @@ using System.Linq;");
             builder.AppendLine(@"using System;
 using System.Collections.Generic;
 using System.Linq;");
-            if (type.ContainingNamespace is { } ns)
+            if (type.ContainingNamespace is { IsGlobalNamespace:false } ns)
             {
                 builder.AppendLine($"namespace {ns.ToDisplayString()};");
 
