@@ -11,7 +11,7 @@ class PrefixExpressionFormatter : IExpressionFormatter, IExpressionVisitor<Strin
     {
         culture ??= CultureInfo.InvariantCulture;
         var builder = new StringBuilder();
-        expression.Visit(this, builder, culture);
+        expression.Accept(this, builder, culture);
         return builder.ToString();
     }
 
@@ -19,9 +19,9 @@ class PrefixExpressionFormatter : IExpressionFormatter, IExpressionVisitor<Strin
     {
         builder.Append(@operator);
         builder.Append(' ');
-        expression.A.Visit(this, builder, culture);
+        expression.A.Accept(this, builder, culture);
         builder.Append(' ');
-        expression.B.Visit(this, builder, culture);
+        expression.B.Accept(this, builder, culture);
     }
 
     public string Type => "prefix";
@@ -33,9 +33,9 @@ class PrefixExpressionFormatter : IExpressionFormatter, IExpressionVisitor<Strin
     void IExpressionVisitor<StringBuilder>.VisitNegationExpression(NegationExpression expression, StringBuilder builder, CultureInfo culture)
     {
         builder.Append('-');
-        expression.Operand.Visit(this, builder, culture);
+        expression.Operand.Accept(this, builder, culture);
     }
-    void IExpressionVisitor<StringBuilder>.VisitParenthesisExpression(ParenthesisExpression expression, StringBuilder builder, CultureInfo culture) => expression.Inner.Visit(this, builder, culture);
+    void IExpressionVisitor<StringBuilder>.VisitParenthesisExpression(ParenthesisExpression expression, StringBuilder builder, CultureInfo culture) => expression.Inner.Accept(this, builder, culture);
 
     void IExpressionVisitor<StringBuilder>.VisitSubtractExpression(SubtractExpression expression, StringBuilder builder, CultureInfo culture) => AppendBinaryExpression(expression, builder, culture, "-");
 
@@ -49,7 +49,7 @@ class PrefixExpressionFormatter : IExpressionFormatter, IExpressionVisitor<Strin
         foreach (var p in expression.Parameters)
         {
             builder.Append(' ');
-            p.Visit(this, builder, culture);
+            p.Accept(this, builder, culture);
         }
     }
 }

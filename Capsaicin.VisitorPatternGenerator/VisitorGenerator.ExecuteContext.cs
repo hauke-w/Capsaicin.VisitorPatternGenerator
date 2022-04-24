@@ -26,14 +26,14 @@ partial class VisitorGenerator
             VisitorArgumentValues = string.Join(", ", arguments);
 
             VisitMethodParameters = string.Concat(Parameters.Parameters.Select(it => string.Concat(", ", it.Type, " ", it.Name)));
-            VisitMethodSignature = $"{Parameters.ReturnType} Visit{Parameters.TypeParameters}({InterfaceSignature} visitor{VisitMethodParameters})";
+            AcceptMethodSignature = $"{Parameters.ReturnType} Accept{Parameters.TypeParameters}({InterfaceSignature} visitor{VisitMethodParameters})";
 
             ObjectParameterName = typeSymbol.Name.ToFirstLower();
         }
 
         private readonly string VisitorArgumentValues;
         private readonly string VisitMethodParameters;
-        private readonly string VisitMethodSignature;
+        private readonly string AcceptMethodSignature;
 
         private readonly string InterfaceHintName;
         private readonly string InterfaceSignature;
@@ -202,10 +202,10 @@ partial class VisitorGenerator
             GenerateVisitorInterface(types);
 
             types.Remove(TypeSymbol);
-            GenerateVisitMethod(TypeSymbol, true);
+            GenerateAcceptMethod(TypeSymbol, true);
             foreach (var type in types)
             {
-                GenerateVisitMethod(type);
+                GenerateAcceptMethod(type);
             }
 
             bool TypeSymbolIsAssignableFrom(INamedTypeSymbol t)
@@ -259,7 +259,7 @@ using System.Linq;");
             GeneratorExecutionContext.AddSource(InterfaceHintName, source);
         }
 
-        private void GenerateVisitMethod(INamedTypeSymbol type, bool isBase = false)
+        private void GenerateAcceptMethod(INamedTypeSymbol type, bool isBase = false)
         {
             var builder = new StringBuilder();
             builder.AppendLine(@"using System;
@@ -299,7 +299,7 @@ using System.Linq;");
             builder.AppendLine("{");
             builder.Append("    public ");
             builder.Append(modifier);
-            builder.Append(VisitMethodSignature);
+            builder.Append(AcceptMethodSignature);
 
             if (isBase && type.IsAbstract)
             {
@@ -311,7 +311,7 @@ using System.Linq;");
             }
             builder.AppendLine("}");
             string source = builder.ToString();
-            string hintName = $"{type.Name}.Visit`{Parameters.TypeParameterCount}";
+            string hintName = $"{type.Name}.Accept`{Parameters.TypeParameterCount}";
             GeneratorExecutionContext.AddSource(hintName, source);
         }
     }

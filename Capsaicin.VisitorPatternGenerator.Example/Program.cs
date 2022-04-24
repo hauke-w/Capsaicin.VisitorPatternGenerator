@@ -8,10 +8,10 @@ using Capsaicin.VisitorPatternGenerator.Example;
 // Example 1: print message created by visitor
 var visitor = new SayHelloVisitor();
 Language language = new English();
-Console.WriteLine(language.Visit(visitor));
+Console.WriteLine(language.Accept(visitor));
 
 language = new German();
-Console.WriteLine(language.Visit(visitor));
+Console.WriteLine(language.Accept(visitor));
 
 // Example 2: Expression formatting with formatters that implement the visitor pattern (see InfixExpressionFormatter and PrefixExpressionFormatter)
 var expression1 = new MultiplyExpression(

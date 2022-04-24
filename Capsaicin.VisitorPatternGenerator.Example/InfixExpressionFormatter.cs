@@ -10,7 +10,7 @@ class InfixExpressionFormatter : IExpressionFormatter, IExpressionVisitor<String
     {
         culture ??= CultureInfo.InvariantCulture;
         var builder = new StringBuilder();
-        expression.Visit(this, builder, culture);
+        expression.Accept(this, builder, culture);
         return builder.ToString();
     }
 
@@ -28,7 +28,7 @@ class InfixExpressionFormatter : IExpressionFormatter, IExpressionVisitor<String
             {
                 builder.Append('(');
             }
-            operand.Visit(this, builder, culture);
+            operand.Accept(this, builder, culture);
             if (opHaslowerPrecedence)
             {
                 builder.Append(')');
@@ -45,12 +45,12 @@ class InfixExpressionFormatter : IExpressionFormatter, IExpressionVisitor<String
     void IExpressionVisitor<StringBuilder>.VisitNegationExpression(NegationExpression expression, StringBuilder builder, CultureInfo culture)
     {
         builder.Append('-');
-        expression.Operand.Visit(this, builder, culture);
+        expression.Operand.Accept(this, builder, culture);
     }
     void IExpressionVisitor<StringBuilder>.VisitParenthesisExpression(ParenthesisExpression expression, StringBuilder builder, CultureInfo culture)
     {
         builder.Append('(');
-        expression.Inner.Visit(this, builder, culture);
+        expression.Inner.Accept(this, builder, culture);
         builder.Append(')');
     }
 
@@ -65,11 +65,11 @@ class InfixExpressionFormatter : IExpressionFormatter, IExpressionVisitor<String
         builder.Append('(');
         if (expression.Parameters.Length > 0)
         {
-            expression.Parameters[0].Visit(this, builder, culture);
+            expression.Parameters[0].Accept(this, builder, culture);
             for (int i = 1; i < expression.Parameters.Length; i++)
             {
                 builder.Append(", ");
-                expression.Parameters[i].Visit(this, builder, culture);
+                expression.Parameters[i].Accept(this, builder, culture);
             }
         }
         builder.Append(')');
