@@ -7,9 +7,11 @@ using Capsaicin.VisitorPattern;
 
 namespace Capsaicin.VisitorPatternGenerator.Example;
 
-// Visitor with one generic input parameter and return type as second generic parameter (IsVisitMethodVoid is false)
+// Visitor with one generic input parameter and return type as second generic parameter (IsVisitMethodVoid is false).
+// There is currently no implementation of the corresponding interface in this example.
 [VisitorPattern(new Type?[] { null })]
 // Visitor with 2 input parameter, first is generic, second is CultureInfo. No return type.
+// The corresponding interface is implemented by InfixExpressionFormatter and PrefixExpressionFormatter
 [VisitorPattern(new Type?[] { null, typeof(CultureInfo) }, new string?[] { null, "culture" }, IsVisitMethodVoid = true)]
 abstract partial record Expression
 {
@@ -25,9 +27,9 @@ abstract partial record Expression
 abstract partial record UnaryExpression(Expression Operand) : Expression
 {
 }
+
 partial record NumberExpression(double Number) : Expression
 {
-
 }
 
 partial record VariableExpression(string Variable) : Expression

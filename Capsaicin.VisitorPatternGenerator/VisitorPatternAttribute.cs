@@ -17,7 +17,7 @@ internal sealed class VisitorPatternAttribute : Attribute
     /// <summary>
     /// Initializes a new instance without parameters and automatically generated names
     /// </summary>
-    /// <param name="parameterTypes"></param>
+    /// <param name="parameterTypes">Specifies the number and types of the method arguments. For null values in the array, a generic type parameter will be used.</param>
     public VisitorPatternAttribute(Type?[] parameterTypes)
     {
         ParameterTypes = parameterTypes;
@@ -26,8 +26,11 @@ internal sealed class VisitorPatternAttribute : Attribute
     /// <summary>
     /// Initializes a new instance with named parameters
     /// </summary>
-    /// <param name="parameterTypes"></param>
-    /// <param name="parameterNames"></param>
+    /// <param name="parameterTypes">Specifies the number and types of the method arguments. For null values in the array, a generic type parameter will be used.</param>
+    /// <param name="parameterNames">
+    /// Specifies the names of the arguments. For null values in the array, the name will be generated.
+    /// The length of the array must be same as the length of the <paramref name="parameterTypes"/>.
+    /// </param>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException"></exception>
     public VisitorPatternAttribute(Type?[] parameterTypes, string?[] parameterNames)

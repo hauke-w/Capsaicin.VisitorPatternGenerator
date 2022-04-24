@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Capsaicin.VisitorPatternGenerator.Example;
 
 // Example 1: print message created by visitor
+Console.WriteLine("*** Example 1: print message created by visitor ***");
 var visitor = new SayHelloVisitor();
 Language language = new English();
 Console.WriteLine(language.Accept(visitor));
@@ -14,6 +15,8 @@ language = new German();
 Console.WriteLine(language.Accept(visitor));
 
 // Example 2: Expression formatting with formatters that implement the visitor pattern (see InfixExpressionFormatter and PrefixExpressionFormatter)
+Console.WriteLine();
+Console.WriteLine("*** Example 2: Expression formatting ***");
 var expression1 = new MultiplyExpression(
     new MultiplyExpression(2.5, "a"),
     new DivisionExpression(
