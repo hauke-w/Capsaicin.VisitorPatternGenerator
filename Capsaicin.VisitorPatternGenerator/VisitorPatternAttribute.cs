@@ -44,18 +44,18 @@ internal sealed class VisitorPatternAttribute : Attribute
     }
 
     /// <summary>
-    /// Specifies whether the Visit method has no return value (void).
+    /// Specifies whether the Accept / Visit method have no return value (void).
     /// </summary>
-    /// <value>true: the Visit method has no return value. false: the Visit method has a return value (type must be specified by generic parameter).</value>
+    /// <value>true: the Accept / Visit methods have no return value. false: the methods have a return value (type must be specified by generic parameter).</value>
     public bool IsVisitMethodVoid { get; init; }
 
     /// <summary>
-    /// Optional: specifies the types Visit method's parameters. For null values a Type parameter will be generated.
+    /// Optional: specifies the types Accept method's parameters. For null values a Type parameter will be generated.
     /// </summary>
     public Type?[]? ParameterTypes { get; }
 
     /// <summary>
-    /// Specifies the names of the Visit method's optional parameters. Corresponds to <see cref="ParameterTypes"/>. If not specified, default names will be generated.
+    /// Specifies the names of the Accept method's optional parameters. Corresponds to <see cref="ParameterTypes"/>. If not specified, default names will be generated.
     /// </summary>
     public string?[]? ParameterNames { get; }
 }
