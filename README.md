@@ -53,6 +53,16 @@ class ExampleVisitor : IExampleVisitor<string>
     string IExampleVisitor<string>.VisitExampleSubClass() => "ExampleSubClass";
 }
 ```
+#### Using the visitor
+Invoke the *Accept* method of a visitable class and pass a visitor instance to it:
+```C#
+var visitor = new ExampleVisitor();
+var example = new Example();
+var result1 = example.Accept(visitor); // result1 = "Example"
+
+example = new ExampleSubClass();
+var result2 = example2.Accept(visitor); // result2 = "ExampleSubClass"
+```
 ### Visitor pattern options
 Per default the visitor interface has a type parameter for the return type of the Accept and Visit~ methods.
 If this does not meet your requirements you can parameterize the *VisitorPattern* attribute to modify the interface and methods.
@@ -97,15 +107,26 @@ partial class ExampleSubClass : Example { }
 
 class ExampleVisitor1 : IExampleVisitor<int, string>
 {
-    string IExampleVisitor.VisitExample<int, string>(int param1) => Console.WriteLine("$Example: param1={param1}");
-    string IExampleVisitor.VisitExampleSubClass<int, string>(int param1) => Console.WriteLine($"ExampleSubClass: param1={param1}");
+    string IExampleVisitor.VisitExample<int, string>(int param1) => "$Example: param1={param1}";
+    string IExampleVisitor.VisitExampleSubClass<int, string>(int param1) => $"ExampleSubClass: param1={param1}";
 }
 
 class ExampleVisitor2 : IExampleVisitor<double, CultureInfo, string>
 {
-    string IExampleVisitor.VisitExample<double, CultureInfo, string>(double param1, CultureInfo param2) => Console.WriteLine("$Example: param1={param1.ToString(param2)}");
-    string IExampleVisitor.VisitExampleSubClass<double, CultureInfo, string>(double param1, CultureInfo param2) => Console.WriteLine($"ExampleSubClass: param1={param1.ToString(param2)}");
+    string IExampleVisitor.VisitExample<double, CultureInfo, string>(double param1, CultureInfo param2) => "$Example: param1={param1.ToString(param2)}";
+    string IExampleVisitor.VisitExampleSubClass<double, CultureInfo, string>(double param1, CultureInfo param2) => $"ExampleSubClass: param1={param1.ToString(param2)}";
 }
+```
+
+Usage:
+```C#
+var visitor = new ExampleVisitor1();
+Example example = new Example();
+// No need to specify the type parameters explicitly. The compiler derives them from the parameters.
+var result1 = example.Accept(visitor, 4711); // result1 = "Example: param1=4711"
+
+example = new ExampleSubClass();
+var result2 = example2.Accept(visitor, 4712); // result2 = "ExampleSubClass: param1=4712"
 ```
 
 ##### Example: Arguments of certain type
@@ -122,14 +143,14 @@ partial class ExampleSubClass : Example { }
 
 class ExampleVisitor3 : IExampleVisitor<string>
 {
-    string IExampleVisitor.VisitExample<string>(CultureInfo param1) => Console.WriteLine("$Example: culture={param1.DisplayName}");
-    string IExampleVisitor.VisitExampleSubClass<string>(CultureInfo param1) => Console.WriteLine($"ExampleSubClass: culture={param1.DisplayName}");
+    string IExampleVisitor.VisitExample<string>(CultureInfo param1) => "$Example: culture={param1.DisplayName}";
+    string IExampleVisitor.VisitExampleSubClass<string>(CultureInfo param1) => $"ExampleSubClass: culture={param1.DisplayName}";
 }
 
 class ExampleVisitor4 : IExampleVisitor<double, string>
 {
-    string IExampleVisitor.VisitExample<double, string>(double param1, CultureInfo param2) => Console.WriteLine("$Example: param1={param1.ToString(param2)}");
-    string IExampleVisitor.VisitExampleSubClass<double, string>(double param1, CultureInfo param2) => Console.WriteLine($"ExampleSubClass: param1={param1.ToString(param2)}");
+    string IExampleVisitor.VisitExample<double, string>(double param1, CultureInfo param2) => "$Example: param1={param1.ToString(param2)}");
+    string IExampleVisitor.VisitExampleSubClass<double, string>(double param1, CultureInfo param2) => $"ExampleSubClass: param1={param1.ToString(param2)}";
 }
 ```
 
@@ -147,14 +168,14 @@ partial class ExampleSubClass : Example { }
 
 class ExampleVisitor3 : IExampleVisitor<string>
 {
-    string IExampleVisitor.VisitExample<string>(CultureInfo culture) => Console.WriteLine("$Example: culture={culture.DisplayName}");
-    string IExampleVisitor.VisitExampleSubClass<string>(CultureInfo culture) => Console.WriteLine($"ExampleSubClass: culture={culture.DisplayName}");
+    string IExampleVisitor.VisitExample<string>(CultureInfo culture) => "$Example: culture={culture.DisplayName}");
+    string IExampleVisitor.VisitExampleSubClass<string>(CultureInfo culture) => $"ExampleSubClass: culture={culture.DisplayName}");
 }
 
 class ExampleVisitor4 : IExampleVisitor<double, string>
 {
-    string IExampleVisitor.VisitExample<double, string>(double param1, CultureInfo culture) => Console.WriteLine("$Example: param1={culture.ToString(culture)}");
-    string IExampleVisitor.VisitExampleSubClass<double, string>(double param1, CultureInfo culture) => Console.WriteLine($"ExampleSubClass: param1={culture.ToString(culture)}");
+    string IExampleVisitor.VisitExample<double, string>(double param1, CultureInfo culture) => "$Example: param1={culture.ToString(culture)}");
+    string IExampleVisitor.VisitExampleSubClass<double, string>(double param1, CultureInfo culture) => $"ExampleSubClass: param1={culture.ToString(culture)}";
 }
 ```
 
