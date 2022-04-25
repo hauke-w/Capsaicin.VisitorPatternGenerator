@@ -9,7 +9,7 @@ The source generator must be added to the C# project that contains one or more c
 Add the *Capsaicin.VisitorPatternGenerator* nuget package to the project. The package reference in the *.csproj* file should be similar as follows:
 ```xml
 <ItemGroup>
-  <PackageReference Include="Capsaicin.VisitorPatternGenerator" Version="0.1.1" PrivateAssets="all" />
+  <PackageReference Include="Capsaicin.VisitorPatternGenerator" Version="0.3.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 #### Option 2: add Project reference
