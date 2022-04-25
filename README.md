@@ -93,6 +93,35 @@ You can add arguments to the Accept and Visit~ methods that can be either generi
   - *parameterTypes* specifies the number and types of the method arguments. For *null* values in the array, a generic type parameter will be used.
   - *parameterNames* specifies the names of the arguments. For *null* values in the array, the name will be generated. The length of the array must be same as the length of the *parameterTypes*.
 
+##### Example: specify number of generic input parameters
+```C#
+using System;
+using System.Globalization;
+using Capsaicin.VisitorPattern;
+
+[VisitorPattern(1)] // corresponds to IExampleVisitor<T1, TResult> (1 input argument argument plus return)
+partial class Example { }
+
+partial class ExampleSubClass : Example { }
+
+class ExampleVisitor1 : IExampleVisitor<int, string>
+{
+    string IExampleVisitor.VisitExample<int, string>(Example example, int param1) => "$Example: param1={param1}";
+    string IExampleVisitor.VisitExampleSubClass<int, string>(ExampleSubClass example, int param1) => $"ExampleSubClass: param1={param1}";
+}
+```
+
+Usage:
+```C#
+var visitor = new ExampleVisitor1();
+Example example = new Example();
+// No need to specify the type parameters explicitly. The compiler derives them from the parameters.
+var result1 = example.Accept(visitor, 4711); // result1 = "Example: param1=4711"
+
+example = new ExampleSubClass();
+var result2 = example2.Accept(visitor, 4712); // result2 = "ExampleSubClass: param1=4712"
+```
+
 ##### Example: Arguments with type of type parameter
 ```C#
 using System;
@@ -118,15 +147,15 @@ class ExampleVisitor2 : IExampleVisitor<double, CultureInfo, string>
 }
 ```
 
-Usage:
+Usage of ExampleVisitor2:
 ```C#
-var visitor = new ExampleVisitor1();
+var visitor = new ExampleVisitor2();
 Example example = new Example();
 // No need to specify the type parameters explicitly. The compiler derives them from the parameters.
-var result1 = example.Accept(visitor, 4711); // result1 = "Example: param1=4711"
+var result1 = example.Accept(visitor, 1.23, CultureInfo.Get("en-GB)); // result1 = "Example: param1=1.23"
 
 example = new ExampleSubClass();
-var result2 = example2.Accept(visitor, 4712); // result2 = "ExampleSubClass: param1=4712"
+var result2 = example2.Accept(visitor, 2.34, CultureInfo.Get("de-DE)); // result2 = "ExampleSubClass: param1=2,34"
 ```
 
 ##### Example: Arguments of certain type

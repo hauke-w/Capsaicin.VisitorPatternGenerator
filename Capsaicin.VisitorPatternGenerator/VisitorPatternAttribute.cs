@@ -18,7 +18,16 @@ internal sealed class VisitorPatternAttribute : Attribute
     }
 
     /// <summary>
-    /// Initializes a new instance without parameters and automatically generated names
+    /// Initializes a new instance with the specified number of parameters (<paramref name="numberOfParameters"/>).
+    /// </summary>
+    /// <param name="numberOfParameters">Specifies the number of the method arguments.</param>
+    public VisitorPatternAttribute(int numberOfParameters)
+        : this(new Type?[numberOfParameters])
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance with parameters and automatically generated names
     /// </summary>
     /// <param name="parameterTypes">Specifies the number and types of the method arguments. For null values in the array, a generic type parameter will be used.</param>
     public VisitorPatternAttribute(Type?[] parameterTypes)

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
@@ -90,82 +91,71 @@ partial class VisitorGenerator
             }
         }
 
+        private bool IsInt(ITypeSymbol? type)
+        {
+            var intType = GeneratorExecutionContext.Compilation.GetSpecialType(SpecialType.System_Int32);
+            return type is not null
+                && SymbolEqualityComparer.Default.Equals(type, intType);
+        }
         private ParametersInfo GetParameters()
         {
-            var map = new Dictionary<string, TypedConstant>();
+            var parameterMap = new Dictionary<string, TypedConstant>();
+            IReadOnlyList<ITypeSymbol?> parameterTypes = Array.Empty<ITypeSymbol?>();
+
             if (Attribute.ConstructorArguments is { IsEmpty: false } constructorArguments)
             {
-                map[nameof(VisitorPatternAttribute.ParameterTypes)] = constructorArguments[0];
-                if (constructorArguments.Length > 1)
+                if (constructorArguments.Length == 1 && IsInt(constructorArguments[0].Type))
                 {
-                    map[nameof(VisitorPatternAttribute.ParameterNames)] = constructorArguments[1];
+                    int numberOfParameters = (int)constructorArguments[0].Value!;
+                    if (numberOfParameters > 0)
+                    {
+                        parameterTypes = new ITypeSymbol?[numberOfParameters];
+                    }
+                }
+                else
+                {
+                    parameterMap[nameof(VisitorPatternAttribute.ParameterTypes)] = constructorArguments[0];
+                    if (constructorArguments.Length > 1)
+                    {
+                        parameterMap[nameof(VisitorPatternAttribute.ParameterNames)] = constructorArguments[1];
+                    }
                 }
             }
             foreach (var item in Attribute.NamedArguments)
             {
-                map[item.Key] = item.Value;
+                parameterMap[item.Key] = item.Value;
             }
-            var isVoidArg = Attribute.NamedArguments.LastOrDefault(it => it.Key == nameof(VisitorPatternAttribute.IsVisitMethodVoid));
-            object? val = isVoidArg.Value.Value;
-            bool isVoid = map.TryGetValue(nameof(VisitorPatternAttribute.IsVisitMethodVoid), out var isVoidParam) && (bool)isVoidParam.Value!;
-            var parameterTypes = map.TryGetValue(nameof(VisitorPatternAttribute.ParameterTypes), out var parameterTypesParam) && !parameterTypesParam.IsNull ? parameterTypesParam.Values : ImmutableArray<TypedConstant>.Empty;
 
-            var parameterNames = map.TryGetValue(nameof(VisitorPatternAttribute.ParameterNames), out var parameterNamesParam) ? parameterNamesParam.Values.Select(it => (string?)it.Value).ToArray() : null;
+            bool isVoid = IsVoid();
+            LoadParameterTypes();
+            var parameterNames = LoadParameterNames();
+
             var typeParameterNames = new List<string>();
             var parameters = new List<(string Type, string Name)>();
 
-            if (parameterNames is null)
+            for (int i = 0; i < parameterNames.Length; i++)
             {
-                for (int i = 0; i < parameterTypes.Length; i++)
-                {
-                    int parameterNumber = i + 1;
-                    string paramName = "param" + parameterNumber;
-                    var tp = parameterTypes[i];
-                    string paramType;
-                    if (tp.IsNull)
-                    {
-                        paramType = "T" + parameterNumber;
-                        typeParameterNames.Add(paramType);
-                    }
-                    else
-                    {
-                        paramType = ((ITypeSymbol)tp.Value!).ToDisplayString();
-                    }
+                string? paramName = parameterNames[i];
 
-                    parameters.Add((paramType, paramName));
-                }
-            }
-            else
-            {
-                if (parameterNames.Length != parameterTypes.Length)
+                var parameterType = parameterTypes[i];
+                string paramTypeName;
+                int parameterNumber = i + 1;
+                if (parameterType is null)
                 {
-                    GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.ParameterNamesDoNotMatchTypes, TypeSymbol.Locations[0]));
+                    paramTypeName = !string.IsNullOrEmpty(paramName)
+                        ? "T" + paramName.ToFirstUpper()
+                        : "T" + parameterNumber;
+                    typeParameterNames.Add(paramTypeName);
                 }
-
-                for (int i = 0; i < parameterNames.Length; i++)
+                else
                 {
-                    string? paramName = parameterNames[i];
-
-                    var tp = parameterTypes[i];
-                    string paramType;
-                    int parameterNumber = i + 1;
-                    if (tp.IsNull)
-                    {
-                        paramType = !string.IsNullOrEmpty(paramName)
-                            ? "T" + paramName.ToFirstUpper()
-                            : "T" + parameterNumber;
-                        typeParameterNames.Add(paramType);
-                    }
-                    else
-                    {
-                        paramType = ((ITypeSymbol)tp.Value!).ToDisplayString();
-                    }
-                    parameters.Add((paramType, paramName ?? "param" + parameterNumber));
+                    paramTypeName = parameterType.ToDisplayString();
                 }
+                parameters.Add((paramTypeName, paramName ?? "param" + parameterNumber));
             }
 
             string returnType;
-            if(isVoid)
+            if (isVoid)
             {
                 returnType = "void";
             }
@@ -179,7 +169,40 @@ partial class VisitorGenerator
                 ? null
                 : $"<{string.Join(", ", typeParameterNames)}>";
 
-            return new (parameters, typeParameters, typeParameterNames.Count, !isVoid, returnType);
+            return new(parameters, typeParameters, typeParameterNames.Count, !isVoid, returnType);
+
+            bool IsVoid()
+            {
+                var isVoidArg = Attribute.NamedArguments.LastOrDefault(it => it.Key == nameof(VisitorPatternAttribute.IsVisitMethodVoid));
+                object? val = isVoidArg.Value.Value;
+                return parameterMap.TryGetValue(nameof(VisitorPatternAttribute.IsVisitMethodVoid), out var isVoidParam) && (bool)isVoidParam.Value!;
+            }
+
+            void LoadParameterTypes()
+            {
+                if (parameterMap.TryGetValue(nameof(VisitorPatternAttribute.ParameterTypes), out var parameterTypesParam))
+                {
+                    parameterTypes = parameterTypesParam.IsNull
+                        ? Array.Empty<ITypeSymbol?>()
+                        : parameterTypesParam.Values.Select(TypedConstantExtensions.GetTypeValue).ToArray();
+                }
+            }
+
+            string?[] LoadParameterNames()
+            {
+                if (parameterMap.TryGetValue(nameof(VisitorPatternAttribute.ParameterNames), out var parameterNamesParam))
+                {
+                    if (parameterNamesParam.Values.Length != parameterTypes.Count)
+                    {
+                        GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.ParameterNamesDoNotMatchTypes, TypeSymbol.Locations[0]));
+                    }
+                    return parameterNamesParam.Values.Select(it => (string?)it.Value).ToArray();
+                }
+                else
+                {
+                    return new string?[parameterTypes.Count];
+                }
+            }
         }
 
         internal void Generate()
@@ -265,7 +288,7 @@ using System.Linq;");
             builder.AppendLine(@"using System;
 using System.Collections.Generic;
 using System.Linq;");
-            if (type.ContainingNamespace is { IsGlobalNamespace:false } ns)
+            if (type.ContainingNamespace is { IsGlobalNamespace: false } ns)
             {
                 builder.AppendLine($"namespace {ns.ToDisplayString()};");
 
