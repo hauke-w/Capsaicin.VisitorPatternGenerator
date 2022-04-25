@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace Capsaicin.VisitorPattern;
 
@@ -75,4 +76,29 @@ internal sealed class VisitorPatternAttribute : Attribute
     /// The name of the Visitor interface to generate or null. If null, the name will be generated from the annotated class.
     /// </summary>
     public string? VisitorInterfaceName { get; init; }
+
+    /// <summary>
+    /// Regular expression for formatting the name of the Visitor method names. When this property is set, the <see cref="VisitorMethodFormat"/> property must be set as well.
+    /// </summary>
+    /// <remarks>
+    /// The name will be constructed using <see cref="Regex.Replace(string, string, string)"/> with <see cref="VisitorMethodRegex"/> as pattern and <see cref="VisitorMethodFormat"/> as replacement:
+    /// <c>MethodName=Regex.Replace(type.Name, VisitorMethodRegex, VisitorMethodFormat);</c>
+    /// 
+    /// <para>
+    /// Example: remove suffix from class name<br/>
+    /// <c>VisitorMethodFormat = "Visit$1"</c><br/>
+    /// <c>VisitorMethodRegex = "(.+)Dto" </c>.<br/>
+    /// For the class "MyDto" the Visit-method name will be "VisitMy".
+    /// </para>
+    /// </remarks>
+    public string? VisitorMethodRegex { get; init; }
+
+    /// <summary>
+    /// Replacement expression for formatting the name of the Visitor method names. When this property is set, the <see cref="VisitorMethodRegex"/> property should be set as well. This property is ignored if <see cref="VisitorMethodRegex"/> is not set.
+    /// </summary>
+    /// <remarks>
+    /// The name will be constructed using <see cref="Regex.Replace(string, string, string)"/> with <see cref="VisitorMethodRegex"/> as pattern and <see cref="VisitorMethodFormat"/> as replacement:
+    /// <c>MethodName=Regex.Replace(type.Name, VisitorMethodRegex, VisitorMethodFormat);</c>
+    /// </remarks>
+    public string? VisitorMethodFormat { get; init; }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Capsaicin.Util;
 using Capsaicin.VisitorPattern;
 using Capsaicin.VisitorPatternGenerator.Util;
@@ -19,7 +20,7 @@ partial class VisitorGenerator
             GeneratorExecutionContext = generatorExecutionContext;
             TypeSymbol = typeSymbol;
             Attribute = attribute;
-            (Parameters, var visitorInterfaceName) = EvaluateAttribute();
+            (Parameters, var visitorInterfaceName, VisitMethodNameEvaluator) = EvaluateAttribute();
             (InterfaceSignature, FullSignature, InterfaceHintName) = GenerateInterfaceName(visitorInterfaceName);
 
             var arguments = new List<string>(Parameters.Parameters.Count + 1) { "this" };
@@ -42,6 +43,9 @@ partial class VisitorGenerator
         private readonly string ObjectParameterName;
 
         private readonly GeneratorExecutionContext GeneratorExecutionContext;
+
+        private Func<INamedTypeSymbol, string> VisitMethodNameEvaluator;
+
         public INamedTypeSymbol TypeSymbol { get; }
         public AttributeData Attribute { get; }
 
@@ -96,7 +100,7 @@ partial class VisitorGenerator
                 && SymbolEqualityComparer.Default.Equals(type, intType);
         }
 
-        private (ParametersInfo Parameters, string VisitorInterfaceName) EvaluateAttribute()
+        private (ParametersInfo Parameters, string VisitorInterfaceName, Func<INamedTypeSymbol, string> VisitMethodNameEvaluator) EvaluateAttribute()
         {
             var parameterMap = new Dictionary<string, TypedConstant>();
             IReadOnlyList<ITypeSymbol?> parameterTypes = Array.Empty<ITypeSymbol?>();
@@ -126,7 +130,8 @@ partial class VisitorGenerator
             }
 
             var visitorInterfaceName = EvaluateVisitorInterfaceName();
-            return (EvaluateParameters(), visitorInterfaceName);
+            var visitMethodNameEvaluator = GetVisitMethodNameEvaluator();
+            return (EvaluateParameters(), visitorInterfaceName, visitMethodNameEvaluator);
 
             string EvaluateVisitorInterfaceName()
             {
@@ -222,7 +227,45 @@ partial class VisitorGenerator
                     return new string?[parameterTypes.Count];
                 }
             }
+
+            Func<INamedTypeSymbol, string> GetVisitMethodNameEvaluator()
+            {
+                var regex = parameterMap.GetValueOrDefault<string>(nameof(VisitorPatternAttribute.VisitorMethodRegex));
+                var format = parameterMap.GetValueOrDefault<string>(nameof(VisitorPatternAttribute.VisitorMethodFormat));
+                return (regex, format) switch
+                {
+                    (null, null) => GetDefaultVisitMethodName,
+                    (not null, not null) => FormatWithRegex,
+                    (not null, _) => WithError(DiagnosticDescriptors.VisitorMethodFormatNotSpecified),
+                    (null, not null) => WithError(DiagnosticDescriptors.VisitorMethodRegexNotSpecified),
+                };
+
+                Func<INamedTypeSymbol, string> WithError(DiagnosticDescriptor error)
+                {
+                    GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(error, TypeSymbol.Locations[0]));
+                    return GetDefaultVisitMethodName;
+                }
+
+                string FormatWithRegex(INamedTypeSymbol type)
+                {
+                    try
+                    {
+                        return Regex.Replace(type.Name, regex, format);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("The regular expression or format for formatting the visitor method name is invalid:");
+                        Console.WriteLine(e.Message);
+                        Console.WriteLine(e.StackTrace);
+                        GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.InvalidVisitorMethodRegex, TypeSymbol.Locations[0], e.Message));
+                        this.VisitMethodNameEvaluator = GetDefaultVisitMethodName;
+                        return GetDefaultVisitMethodName(type);
+                    }
+                }
+            }
         }
+
+        string GetDefaultVisitMethodName(INamedTypeSymbol type) => "Visit" + type.Name;
 
         internal void Generate()
         {
@@ -294,7 +337,8 @@ using System.Linq;");
             var returnType = Parameters.ReturnType;
             foreach (var type in nonAbstractTypes)
             {
-                builder.AppendLine($"   {returnType} Visit{type.Name}({type.ToDisplayString()} {ObjectParameterName}{VisitMethodParameters});");
+                var visitMethodName = VisitMethodNameEvaluator(type);
+                builder.AppendLine($"   {returnType} {visitMethodName}({type.ToDisplayString()} {ObjectParameterName}{VisitMethodParameters});");
             }
             builder.AppendLine("}");
             string source = builder.ToString();
@@ -349,7 +393,8 @@ using System.Linq;");
             }
             else
             {
-                builder.AppendLine($" => visitor.Visit{type.Name}({VisitorArgumentValues});");
+                var visitMethodName = VisitMethodNameEvaluator(type);
+                builder.AppendLine($" => visitor.{visitMethodName}({VisitorArgumentValues});");
             }
             builder.AppendLine("}");
             string source = builder.ToString();

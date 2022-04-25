@@ -43,6 +43,26 @@ partial class ExampleSubClass : Example
 ```
 
 Further configuration is not needed on sub classes. If you add the a *VisitorPatternAttribute* annotation to a sub class, another visitor Interface and members will be generated independently.
+#### Generated code
+The source generator generates an interface for visitors and "Accept" methods for the root class as well as every non-abstract sub class.
+For the above example following code will be generated:
+```C#
+partial class Example
+{
+    public virtual TResult Accept<TResult>(IExampleVisitor<TResult> visitor) => visitor.VisitExample(this);
+}
+
+partial class ExampleSubClass
+{
+    public override TResult Accept<TResult>(IExampleVisitor<TResult> visitor) => visitor.VisitExampleSubClass(this);
+}
+
+IExampleVisitor<TResult>
+{
+    TResult VisitExample(Example exampleDto);
+    TResult VisitSpecialExample(SpecialExample exampleDto);
+}
+```
 
 #### Implement visitor
 Add a class to your project and implement the generated interface. In the example the interface is implemented explicitly but this is of course not required.
@@ -207,11 +227,37 @@ class ExampleVisitor4 : IExampleVisitor<double, string>
     string IExampleVisitor.VisitExampleSubClass<double, string>(ExampleSubClass example, double param1, CultureInfo culture) => $"ExampleSubClass: param1={culture.ToString(culture)}";
 }
 ```
+#### Visitor naming
+Per default the visitor inferface will be named *I[Class.Name]Visitor*. Optionally the interface name can be specified with the *VisitorInterfaceName* parameter:
+```C#
+using Capsaicin.VisitorPattern;
+
+[VisitorPattern(VisitorInterfaceName = "IMyVisitor")] // corresponds to IMyVisitor<TResult>
+partial class Example { }
+```
+
+#### Visit method name
+Per default the visit method names for each class found in your project will *Visit[Class.Name]*. These names can be customized using the *VisitorMethodRegex* and *VisitorMethodFormat* parameters. The following example illustrates using these parameters with removing the "Dto" suffix from the class names:
+```C#
+using Capsaicin.VisitorPattern;
+
+[VisitorPattern(VisitorMethodRegex = "(.+)Dto", VisitorMethodFormat = "Visit$1")]
+partial class ExampleDto { } // generated method: VisitExample
+partial class SpecialExampleDto : ExampleDto { } // generated method: VisitSpecialExample
+```
+Following visitor interface will be generated:
+```C#
+IExampleVisitor<TResult>
+{
+    TResult VisitExample(ExampleDto exampleDto); // Dto suffix removed from the method name!
+    TResult VisitSpecialExample(SpecialExampleDto exampleDto); // Dto suffix removed from the method name!
+}
+```
 
 ### Invalid VisitorPattern attribute combinations
 The valid combinations of *VisitorPattern* attribute annotations is determinded by the number of generic type parameters that will be generated. There can only be one visitor with 0, 1, 2 etc. type parameters, respectively.
 Please mind that a type parameter is used for the return type unless you specify `IsVisitMethodVoid = true`.
-Consequently, you cannot combine for example `[VisitorPattern]` and `[VisitorPattern(new Type?[]{ null }, IsVisitMethodVoid = true)]` because the visitor interface would have one parameter for both (`IExampleVisitor<TResult>` and `IExampleVisitor<T1>`). 
+Consequently, you cannot combine for example `[VisitorPattern]` and `[VisitorPattern(new Type?[]{ null }, IsVisitMethodVoid = true)]` because the visitor interface would have one parameter for both (`IExampleVisitor<TResult>` and `IExampleVisitor<T1>`). However, you can overcome this limitation by specifying a custom interface name (see [Visitor naming]).
 
 ### Further examples
 See the source code of the *Capsaicin.VisitorPatternGenerator.Example* project for examples.
