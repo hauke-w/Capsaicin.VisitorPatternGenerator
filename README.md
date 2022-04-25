@@ -257,7 +257,7 @@ IExampleVisitor<TResult>
 ### Invalid VisitorPattern attribute combinations
 The valid combinations of *VisitorPattern* attribute annotations is determinded by the number of generic type parameters that will be generated. There can only be one visitor with 0, 1, 2 etc. type parameters, respectively.
 Please mind that a type parameter is used for the return type unless you specify `IsVisitMethodVoid = true`.
-Consequently, you cannot combine for example `[VisitorPattern]` and `[VisitorPattern(new Type?[]{ null }, IsVisitMethodVoid = true)]` because the visitor interface would have one parameter for both (`IExampleVisitor<TResult>` and `IExampleVisitor<T1>`). However, you can overcome this limitation by specifying a custom interface name (see [Visitor naming]).
+Consequently, you cannot combine for example `[VisitorPattern]` and `[VisitorPattern(new Type?[]{ null }, IsVisitMethodVoid = true)]` because the visitor interface would have one parameter for both (`IExampleVisitor<TResult>` and `IExampleVisitor<T1>`). However, you can overcome this limitation by specifying a custom interface name (see [Visitor naming](#Visitor naming)).
 
 ### Further examples
 See the source code of the *Capsaicin.VisitorPatternGenerator.Example* project for examples.
