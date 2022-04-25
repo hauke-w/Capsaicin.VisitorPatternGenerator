@@ -19,8 +19,8 @@ partial class VisitorGenerator
             GeneratorExecutionContext = generatorExecutionContext;
             TypeSymbol = typeSymbol;
             Attribute = attribute;
-            Parameters = GetParameters();
-            (InterfaceSignature, FullSignature, InterfaceHintName) = GenerateInterfaceName();
+            (Parameters, var visitorInterfaceName) = EvaluateAttribute();
+            (InterfaceSignature, FullSignature, InterfaceHintName) = GenerateInterfaceName(visitorInterfaceName);
 
             var arguments = new List<string>(Parameters.Parameters.Count + 1) { "this" };
             arguments.AddRange(Parameters.Parameters.Select(it => it.Name.ToFirstLower()));
@@ -54,15 +54,13 @@ partial class VisitorGenerator
 
         private record ParametersInfo(List<(string Type, string Name)> Parameters, string? TypeParameters, int TypeParameterCount, bool HasReturn, string ReturnType);
 
-        private (string Signature, string FullSignature, string HintName) GenerateInterfaceName()
+        private (string Signature, string FullSignature, string HintName) GenerateInterfaceName(string name)
         {
             var fullSignatureBuilder = new StringBuilder();
             var signatureBuilder = new StringBuilder();
             AppendContainingTypeOrNamespace(TypeSymbol);
 
-            signatureBuilder.Append('I');
-            signatureBuilder.Append(TypeSymbol.Name);
-            signatureBuilder.Append("Visitor");
+            signatureBuilder.Append(name);
             var hintName = signatureBuilder.ToString();
             if (Parameters.TypeParameterCount > 0)
             {
@@ -97,7 +95,8 @@ partial class VisitorGenerator
             return type is not null
                 && SymbolEqualityComparer.Default.Equals(type, intType);
         }
-        private ParametersInfo GetParameters()
+
+        private (ParametersInfo Parameters, string VisitorInterfaceName) EvaluateAttribute()
         {
             var parameterMap = new Dictionary<string, TypedConstant>();
             IReadOnlyList<ITypeSymbol?> parameterTypes = Array.Empty<ITypeSymbol?>();
@@ -126,50 +125,70 @@ partial class VisitorGenerator
                 parameterMap[item.Key] = item.Value;
             }
 
-            bool isVoid = IsVoid();
-            LoadParameterTypes();
-            var parameterNames = LoadParameterNames();
+            var visitorInterfaceName = EvaluateVisitorInterfaceName();
+            return (EvaluateParameters(), visitorInterfaceName);
 
-            var typeParameterNames = new List<string>();
-            var parameters = new List<(string Type, string Name)>();
-
-            for (int i = 0; i < parameterNames.Length; i++)
+            string EvaluateVisitorInterfaceName()
             {
-                string? paramName = parameterNames[i];
-
-                var parameterType = parameterTypes[i];
-                string paramTypeName;
-                int parameterNumber = i + 1;
-                if (parameterType is null)
+                string? name = null;
+                if (parameterMap.TryGetValue(nameof(VisitorPatternAttribute.VisitorInterfaceName), out var nameParameter)
+                    && !nameParameter.IsNull)
                 {
-                    paramTypeName = !string.IsNullOrEmpty(paramName)
-                        ? "T" + paramName.ToFirstUpper()
-                        : "T" + parameterNumber;
-                    typeParameterNames.Add(paramTypeName);
+                    name = (string)nameParameter.Value!;
+                }
+
+                return name is null or { Length: 0 }
+                    ? $"I{TypeSymbol.Name}Visitor"
+                    : name;
+            }
+
+            ParametersInfo EvaluateParameters()
+            {
+                bool isVoid = IsVoid();
+                LoadParameterTypes();
+                var parameterNames = LoadParameterNames();
+
+                var typeParameterNames = new List<string>();
+                var parameters = new List<(string Type, string Name)>();
+
+                for (int i = 0; i < parameterNames.Length; i++)
+                {
+                    string? paramName = parameterNames[i];
+
+                    var parameterType = parameterTypes[i];
+                    string paramTypeName;
+                    int parameterNumber = i + 1;
+                    if (parameterType is null)
+                    {
+                        paramTypeName = !string.IsNullOrEmpty(paramName)
+                            ? "T" + paramName.ToFirstUpper()
+                            : "T" + parameterNumber;
+                        typeParameterNames.Add(paramTypeName);
+                    }
+                    else
+                    {
+                        paramTypeName = parameterType.ToDisplayString();
+                    }
+                    parameters.Add((paramTypeName, paramName ?? "param" + parameterNumber));
+                }
+
+                string returnType;
+                if (isVoid)
+                {
+                    returnType = "void";
                 }
                 else
                 {
-                    paramTypeName = parameterType.ToDisplayString();
+                    returnType = "TResult";
+                    typeParameterNames.Add(returnType);
                 }
-                parameters.Add((paramTypeName, paramName ?? "param" + parameterNumber));
-            }
 
-            string returnType;
-            if (isVoid)
-            {
-                returnType = "void";
-            }
-            else
-            {
-                returnType = "TResult";
-                typeParameterNames.Add(returnType);
-            }
+                string? typeParameters = typeParameterNames.Count == 0
+                    ? null
+                    : $"<{string.Join(", ", typeParameterNames)}>";
 
-            string? typeParameters = typeParameterNames.Count == 0
-                ? null
-                : $"<{string.Join(", ", typeParameterNames)}>";
-
-            return new(parameters, typeParameters, typeParameterNames.Count, !isVoid, returnType);
+                return new(parameters, typeParameters, typeParameterNames.Count, !isVoid, returnType);
+            }
 
             bool IsVoid()
             {

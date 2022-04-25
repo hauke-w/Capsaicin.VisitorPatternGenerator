@@ -70,4 +70,9 @@ internal sealed class VisitorPatternAttribute : Attribute
     /// Specifies the names of the Accept method's optional parameters. Corresponds to <see cref="ParameterTypes"/>. If not specified, default names will be generated.
     /// </summary>
     public string?[]? ParameterNames { get; }
+
+    /// <summary>
+    /// The name of the Visitor interface to generate or null. If null, the name will be generated from the annotated class.
+    /// </summary>
+    public string? VisitorInterfaceName { get; init; }
 }
