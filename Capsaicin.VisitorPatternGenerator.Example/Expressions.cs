@@ -7,12 +7,12 @@ using Capsaicin.VisitorPattern;
 
 namespace Capsaicin.VisitorPatternGenerator.Example;
 
+// Visitor with two generic parameters (all input). No return type (IsVisitMethodVoid is false). In order to solve conflict with other visitor with 2 parameters, name is specified explicitly.
+// There is currently no implementation of the corresponding interface in this example.
+[VisitorPattern(2, IsVisitMethodVoid= true, VisitorInterfaceName = "IVoidExpressionVisitor")]
 // Visitor with one generic input parameter and return type as second generic parameter (IsVisitMethodVoid is false).
 // There is currently no implementation of the corresponding interface in this example.
-//[VisitorPattern(new Type?[] { null })]
-// Visitor with one generic input parameter and return type as second generic parameter (IsVisitMethodVoid is false).
-// There is currently no implementation of the corresponding interface in this example.
-[VisitorPattern(1, VisitorInterfaceName="IFoo", VisitorMethodRegex= @"(\.)+Dto", VisitorMethodFormat = "Visit$1")]
+[VisitorPattern(1, VisitorMethodRegex= @"(\.)+Expression", VisitorMethodFormat = "Visit$1")]
 // Visitor with 2 input parameter, first is generic, second is CultureInfo. No return type.
 // The corresponding interface is implemented by InfixExpressionFormatter and PrefixExpressionFormatter
 [VisitorPattern(new Type?[] { null, typeof(CultureInfo) }, new string?[] { null, "culture" }, IsVisitMethodVoid = true)]
