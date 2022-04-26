@@ -398,7 +398,7 @@ using System.Linq;");
             }
             builder.AppendLine("}");
             string source = builder.ToString();
-            string hintName = $"{type.Name}.Accept`{Parameters.TypeParameterCount}";
+            string hintName = $"{type.Name}.Accept_{InterfaceHintName}`{Parameters.TypeParameterCount}";
             GeneratorExecutionContext.AddSource(hintName, source);
         }
     }
