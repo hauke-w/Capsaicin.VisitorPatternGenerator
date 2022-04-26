@@ -10,7 +10,8 @@ partial class VisitorGenerator
 {
     private class SyntaxReceiver : ISyntaxContextReceiver
     {
-        public List<INamedTypeSymbol> Types { get; } = new();
+        // use set because there might be multiple partial declarations for the same type!
+        public HashSet<INamedTypeSymbol> Types { get; } = new(SymbolEqualityComparer.Default);
 
         public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
         {

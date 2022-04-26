@@ -8,7 +8,7 @@
     <Authors>Hauke Wittern</Authors>
     <Copyright>Hauke Wittern</Copyright>
     <Description>Provides a C# source generator for Visitor Pattern members.</Description>
-    <Version>0.3.1</Version>
+    <Version>0.3.2</Version>
     <PackageProjectUrl>https://github.com/hauke-w/Capsaicin.VisitorPatternGenerator</PackageProjectUrl>
     <RepositoryUrl>https://github.com/hauke-w/Capsaicin.VisitorPatternGenerator.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
